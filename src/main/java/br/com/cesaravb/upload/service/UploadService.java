@@ -16,8 +16,8 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
-import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 
 @Service
 @Slf4j
@@ -33,6 +33,8 @@ public class UploadService {
     // # 
     // ====================================
     public UploadResponseDTO upload(String bucket, MultipartFile file) {
+    	
+    	bucket = bucket.toLowerCase().trim();
         garantirBucketExiste(bucket);
 
         try {
@@ -62,7 +64,8 @@ public class UploadService {
     // # 
     // ====================================
     public List<UploadResponseDTO> uploadLote(String bucket, List<MultipartFile> files) {
-        return files.stream().map(file -> upload(bucket, file)).toList();
+    	var nomeBucket = bucket.toLowerCase().trim();
+        return files.stream().map(file -> upload(nomeBucket, file)).toList();
     }
 
     
@@ -73,19 +76,19 @@ public class UploadService {
         try {
             s3Client.headBucket(HeadBucketRequest.builder().bucket(bucket).build());
             log.info("Bucket já existe: {}", bucket);
-            
-        } catch (NoSuchBucketException e) {
-        	
-            try {
-                log.info("Bucket não encontrado, criando: {}", bucket);
-                s3Client.createBucket(CreateBucketRequest.builder().bucket(bucket).build());
-                
-            } catch (Exception ex) {
-                throw new BucketException("Erro ao criar bucket " + bucket + ": " + ex.getMessage());
+        } catch (S3Exception e) {
+            if (e.statusCode() == 404 || e.statusCode() == 400) {
+                try {
+                    log.info("Bucket não encontrado, criando: {}", bucket);
+                    s3Client.createBucket(CreateBucketRequest.builder().bucket(bucket).build());
+                } catch (Exception ex) {
+                    throw new BucketException("Erro ao criar bucket " + bucket + ": " + ex.getMessage());
+                }
+            } else {
+                throw new BucketException("Erro ao verificar bucket " + bucket + ": " + e.getMessage());
             }
-            
-        } catch (Exception e) {
-            throw new BucketException("Erro ao verificar bucket " + bucket + ": " + e.getMessage());
         }
     }
+    
+    
 }
