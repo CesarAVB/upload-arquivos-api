@@ -1,53 +1,67 @@
-# upload-arquivos-api
+# 📦 Upload Arquivos API
 
-Microserviço responsável pelo upload de arquivos para buckets no MinIO, desenvolvido com Spring Boot e integrado via SDK AWS S3.
+![Java](https://img.shields.io/badge/Java-21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5.11-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white)
+![MinIO](https://img.shields.io/badge/MinIO-S3_Compatible-C72E49?style=for-the-badge&logo=minio&logoColor=white)
+![AWS SDK](https://img.shields.io/badge/AWS_SDK-v2-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white)
+![Maven](https://img.shields.io/badge/Maven-Build-C71A36?style=for-the-badge&logo=apachemaven&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
 
----
-
-## 🚀 Tecnologias
-
-- Java 17
-- Spring Boot
-- AWS SDK v2 (S3)
-- MinIO
-- Lombok
+> Microserviço RESTful para upload de arquivos individuais e em lote para o MinIO via protocolo S3, com criação automática de buckets e tratamento global de exceções.
 
 ---
 
-## 📁 Estrutura do Projeto
+## 📋 Tópicos
 
-```
-upload/
-├── configuration/
-│   └── MinioConfig.java
-├── controller/
-│   └── UploadController.java
-├── dto/
-│   └── UploadResponseDTO.java
-│   └── response/
-│       └── ErrorResponseDTO.java
-├── exception/
-│   ├── BucketException.java
-│   ├── GlobalExceptionHandler.java
-│   └── UploadException.java
-├── service/
-│   └── UploadService.java
-```
+`java` `spring-boot` `minio` `s3` `aws-sdk-v2` `file-upload` `rest-api` `microservice` `lombok` `docker` `object-storage` `multipart`
+
+---
+
+## 🚀 Funcionalidades
+
+- Upload de **arquivo único** para um bucket específico
+- Upload de **múltiplos arquivos** em lote
+- **Criação automática** de bucket caso não exista
+- Nome do arquivo gerado com **UUID** para evitar colisões
+- **Tratamento global de exceções** com respostas padronizadas
+- Configuração de **CORS** via propriedades
+- Suporte a múltiplos **perfis** (`local`, `prod`)
+
+---
+
+## 🛠️ Tecnologias
+
+| Tecnologia | Versão | Uso |
+|---|---|---|
+| Java | 21 | Linguagem principal |
+| Spring Boot | 3.5.11 | Framework base |
+| AWS SDK v2 (S3) | 2.20.26 | Comunicação com MinIO |
+| Lombok | — | Redução de boilerplate |
+| Maven | — | Build e dependências |
 
 ---
 
 ## ⚙️ Configuração
 
-Configure as variáveis de ambiente ou o `application.properties`:
+### Variáveis de Ambiente (perfil `prod`)
+
+| Variável | Descrição |
+|---|---|
+| `MINIO_ENDPOINT` | URL do servidor MinIO (ex: `http://localhost:9000`) |
+| `MINIO_ACCESSKEY` | Access Key do MinIO |
+| `MINIO_SECRETKEY` | Secret Key do MinIO |
+| `MINIO_REGION` | Região (ex: `us-east-1`) |
+| `CORS_ALLOWED_ORIGINS` | Origins permitidas (separadas por vírgula) |
+| `SPRING_PROFILES_ACTIVE` | Perfil ativo (`local` ou `prod`) |
+
+### Exemplo — `application-local.properties`
 
 ```properties
-minio.endpoint=${MINIO_ENDPOINT}
-minio.access-key=${MINIO_ACCESSKEY}
-minio.secret-key=${MINIO_SECRETKEY}
-minio.region=${MINIO_REGION}
-
-spring.servlet.multipart.max-file-size=100MB
-spring.servlet.multipart.max-request-size=100MB
+minio.endpoint=http://localhost:9000
+minio.access-key=minioadmin
+minio.secret-key=minioadmin
+minio.region=us-east-1
+app.cors.allowed-origins=http://localhost:4200
 ```
 
 ---
@@ -60,67 +74,80 @@ spring.servlet.multipart.max-request-size=100MB
 POST /api/v1/upload/{bucket}/arquivo
 Content-Type: multipart/form-data
 
-Parâmetro: file (MultipartFile)
+Param: file (MultipartFile)
 ```
 
-**Resposta:**
-```json
-{
-  "nomeArquivo": "uuid-nome-do-arquivo.pdf",
-  "url": "http://localhost:9000/meu-bucket/uuid-nome-do-arquivo.pdf"
-}
-```
-
----
-
-### Upload de múltiplos arquivos
+### Upload em lote
 
 ```http
 POST /api/v1/upload/{bucket}/arquivos
 Content-Type: multipart/form-data
 
-Parâmetro: files (List<MultipartFile>)
+Param: files (List<MultipartFile>)
 ```
 
-**Resposta:**
-```json
-[
-  {
-    "nomeArquivo": "uuid-arquivo1.pdf",
-    "url": "http://localhost:9000/meu-bucket/uuid-arquivo1.pdf"
-  },
-  {
-    "nomeArquivo": "uuid-arquivo2.png",
-    "url": "http://localhost:9000/meu-bucket/uuid-arquivo2.png"
-  }
-]
-```
-
----
-
-## ⚠️ Tratamento de Erros
-
-Em caso de erro, a API retorna o seguinte padrão:
+### Resposta de sucesso
 
 ```json
 {
-  "timestamp": "2026-02-20T15:12:00Z",
-  "status": 500,
-  "error": "Internal Server Error",
-  "message": "Descrição do erro"
+  "nomeArquivo": "550e8400-e29b-41d4-a716-446655440000-foto.png",
+  "url": "http://localhost:9000/meu-bucket/550e8400-e29b-41d4-a716-446655440000-foto.png"
 }
 ```
 
-| Exceção | Status HTTP |
-|---|---|
-| `UploadException` | 500 Internal Server Error |
-| `BucketException` | 500 Internal Server Error |
-| `MaxUploadSizeExceededException` | 413 Payload Too Large |
+### Resposta de erro
+
+```json
+{
+  "timestamp": "2025-01-01T12:00:00Z",
+  "status": 500,
+  "error": "Internal Server Error",
+  "message": "Erro ao enviar arquivo foto.png: ..."
+}
+```
 
 ---
 
-## 📝 Observações
+## ▶️ Como executar
 
-- O bucket é definido dinamicamente via URL. Caso não exista, é criado automaticamente.
-- Aceita qualquer tipo de arquivo.
-- O nome do arquivo salvo no MinIO é gerado com UUID para evitar conflitos.
+```bash
+# Clone o repositório
+git clone https://github.com/seu-usuario/upload-arquivos-api.git
+
+# Acesse a pasta
+cd upload-arquivos-api
+
+# Execute com Maven (perfil local)
+./mvnw spring-boot:run
+```
+
+> **Pré-requisito:** MinIO em execução. Utilize Docker:
+> ```bash
+> docker run -p 9000:9000 -p 9001:9001 \
+>   -e MINIO_ROOT_USER=minioadmin \
+>   -e MINIO_ROOT_PASSWORD=minioadmin \
+>   quay.io/minio/minio server /data --console-address ":9001"
+> ```
+
+---
+
+## 🔮 Melhorias Futuras
+
+- [ ] **Validação de tipo de arquivo** — restringir extensões permitidas por bucket (ex: apenas imagens, apenas PDFs)
+- [ ] **Limite de tamanho configurável por bucket** — além do limite global do Spring
+- [ ] **Endpoint de deleção de arquivo** — `DELETE /api/v1/upload/{bucket}/arquivo/{nomeArquivo}`
+- [ ] **Endpoint de listagem de arquivos** — listar objetos de um bucket com paginação
+- [ ] **Geração de URL pré-assinada** — URL temporária de acesso direto ao arquivo (S3Presigner já mapeado no código)
+- [ ] **Autenticação e autorização** — integração com Spring Security + JWT
+- [ ] **Testes unitários e de integração** — cobertura do `UploadService` com Mockito e Testcontainers (MinIO)
+- [ ] **Docker Compose completo** — orquestrar API + MinIO em um único arquivo
+- [ ] **Suporte a múltiplas regiões/instâncias** — configuração dinâmica de múltiplos clientes S3
+- [ ] **Endpoint de download** — retornar o arquivo como stream via `ResponseEntity<Resource>`
+- [ ] **Documentação com Swagger/OpenAPI** — interface interativa para testar os endpoints
+
+---
+
+## 👨‍💻 Autor
+
+**Cesar Augusto Vieira Bezerra**
+[portfolio.cesaraugusto.dev.br](https://portfolio.cesaraugusto.dev.br/)
