@@ -1,3 +1,9 @@
+## [1.1.0](https://github.com/CesarAVB/upload-arquivos-api/compare/v1.0.0...v1.1.0) (2026-02-21)
+
+### Features
+
+* atualiza UploadService para tratamento de exceções S3 e ([bdedd0e](https://github.com/CesarAVB/upload-arquivos-api/commit/bdedd0ef8b6d24a0e5dd0bd3d48b00a0869e1a39))
+
 ## 1.0.0 (2026-02-20)
 
 ### Features
