@@ -143,5 +143,6 @@ cd upload-arquivos-api
 
 ## 👨‍💻 Autor
 
-**Cesar Augusto Vieira Bezerra**
-[portfolio.cesaraugusto.dev.br](https://portfolio.cesaraugusto.dev.br/)
+**Cesar Augusto Vieira Bezerra**  
+[portfolio.cesaraugusto.dev.br]
+(https://portfolio.cesaraugusto.dev.br/)
