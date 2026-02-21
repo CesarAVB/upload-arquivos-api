@@ -11,12 +11,6 @@
 
 ---
 
-## 📋 Tópicos
-
-`java` `spring-boot` `minio` `s3` `aws-sdk-v2` `file-upload` `rest-api` `microservice` `lombok` `docker` `object-storage` `multipart`
-
----
-
 ## 🚀 Funcionalidades
 
 - Upload de **arquivo único** para um bucket específico
